@@ -9,30 +9,34 @@ import {
     Box,
     Paper,
 } from "@mui/material";
+import { useUser, UserButton } from "@clerk/clerk-react";
 
 export default function Home() {
-    // Temporary user for testing
-    const user = { id: "123" };
+    const { isLoaded, isSignedIn, user } = useUser();
+
     const navigate = (path) => window.location.href = path; // simple replacement for routing
 
-    const handleGetStarted = async () => {
-        if (user) {
-            // Here you can call your backend
+    const handleGetStarted = () => {
+        if (isSignedIn && user) {
             console.log("Create user document for", user.id);
             navigate("/generate");
         } else {
             alert("You must be logged in");
+            navigate("/sign-in");
         }
     };
 
-    const handleFlashcards = async () => {
-        if (user) {
-            console.log("Create user document for", user.id);
+    const handleFlashcards = () => {
+        if (isSignedIn && user) {
+            console.log("Access flashcards for", user.id);
             navigate("/flashcards");
         } else {
             alert("You must be logged in");
+            navigate("/sign-in");
         }
     };
+
+    if (!isLoaded) return null; // wait for Clerk to load
 
     return (
         <Container
@@ -47,7 +51,11 @@ export default function Home() {
                         </Typography>
                     </Box>
                     <Box>
-                        <Button color="inherit" onClick={() => alert("Login clicked")}>Login</Button>
+                        {isSignedIn ? (
+                            <UserButton />
+                        ) : (
+                            <Button color="inherit" onClick={() => navigate("/sign-in")}>Login / Sign Up</Button>
+                        )}
                     </Box>
                 </Toolbar>
             </AppBar>
@@ -56,7 +64,7 @@ export default function Home() {
                 <Typography variant="h2" gutterBottom>Welcome to StudyWise</Typography>
                 <Typography variant="h5" gutterBottom>The easiest way to create flashcards from your text.</Typography>
                 <Box sx={{ my: 4 }}>
-                    <Button variant="contained" onClick={handleGetStarted}>Generate</Button>
+                    <Button variant="contained" onClick={handleGetStarted} sx={{ mr: 2 }}>Generate</Button>
                     <Button variant="contained" onClick={handleFlashcards}>Flashcards</Button>
                 </Box>
             </Box>
