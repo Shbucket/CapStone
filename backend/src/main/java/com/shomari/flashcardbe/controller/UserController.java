@@ -5,7 +5,6 @@ import com.shomari.flashcardbe.dto.AuthResponse;
 import com.shomari.flashcardbe.dto.LoginRequest;
 import com.shomari.flashcardbe.dto.RegisterRequest;
 import com.shomari.flashcardbe.entity.User;
-import com.shomari.flashcardbe.security.JwtUtil;
 import com.shomari.flashcardbe.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
