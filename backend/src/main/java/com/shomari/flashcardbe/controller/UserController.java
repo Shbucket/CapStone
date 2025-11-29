@@ -51,16 +51,11 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
         Optional<User> userOpt = userService.findByUsername(request.getUsername());
-        if (userOpt.isEmpty()) {
+        if (userOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), userOpt.get().getPassword())) {
             return ResponseEntity.status(401).body("Invalid username or password");
         }
 
-        User user = userOpt.get();
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).body("Invalid username or password");
-        }
-
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(userOpt.get().getUsername());
         return ResponseEntity.ok(new AuthResponse(token));
     }
 }
