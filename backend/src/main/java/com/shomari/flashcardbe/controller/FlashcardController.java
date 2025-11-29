@@ -62,7 +62,7 @@ public class FlashcardController {
                                                          @RequestParam Long setId) {
         String userId = auth.getName();
         FlashcardSet set = flashcardSetService.getSetByIdAndUser(setId, userId);
-        return ResponseEntity.ok(flashcardService.getFlashcardsBySet(set));
+        return ResponseEntity.ok(flashcardService.getFlashcardsBySetId(setId));
     }
 
     @PutMapping("/{flashcardId}")
@@ -70,7 +70,7 @@ public class FlashcardController {
                                                      @PathVariable Long flashcardId,
                                                      @RequestBody Flashcard updated) {
         String userId = auth.getName();
-        Flashcard flashcard = flashcardService.getFlashcardByIdAndUser(flashcardId, userId)
+        Flashcard flashcard = flashcardService.getFlashcardByIdAndUserId(flashcardId, userId)
                 .orElseThrow(() -> new RuntimeException("Flashcard not found"));
         flashcard.setTopic(updated.getTopic());
         flashcard.setQuestion(updated.getQuestion());
@@ -82,7 +82,7 @@ public class FlashcardController {
     public ResponseEntity<Void> deleteFlashcard(Authentication auth,
                                                 @PathVariable Long flashcardId) {
         String userId = auth.getName();
-        Flashcard flashcard = flashcardService.getFlashcardByIdAndUser(flashcardId, userId)
+        Flashcard flashcard = flashcardService.getFlashcardByIdAndUserId(flashcardId, userId)
                 .orElseThrow(() -> new RuntimeException("Flashcard not found"));
         flashcardService.deleteFlashcard(flashcard);
         return ResponseEntity.noContent().build();
