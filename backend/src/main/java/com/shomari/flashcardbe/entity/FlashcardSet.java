@@ -2,6 +2,7 @@ package com.shomari.flashcardbe.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,7 @@ public class FlashcardSet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "FlashcardSet name is required")
     @Column(nullable = false)
     private String name;
 

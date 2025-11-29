@@ -33,7 +33,7 @@ public class Flashcard {
     private String userId; // Clerk user ID
 
     @ManyToOne
-    @JoinColumn(name = "flashcard_set_id")
+    @JoinColumn(name = "flashcard_set_id", nullable = false)
     private FlashcardSet flashcardSet;
 
     public Flashcard() {}
