@@ -18,7 +18,7 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long user_id;
+    private Long userId;
 
     @Column(nullable = false, unique = true)
     @NotBlank(message = "Username is required")
@@ -55,12 +55,12 @@ public class User {
         this.username = username;
     }
 
-    public Long getUser_id() {
-        return user_id;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUser_id(Long id) {
-        this.user_id = id;
+    public void setUserId(Long id) {
+        this.userId = id;
     }
 
     public String getEmail() {
