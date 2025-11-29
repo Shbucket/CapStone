@@ -24,7 +24,6 @@ public class FlashcardServiceTest {
         flashcard.setQuestion("What is Java?");
         flashcard.setAnswer("A programming language");
         flashcard.setTopic("Programming");
-        flashcard.setId(1L);
 
         Mockito.when(flashcardRepository.save(Mockito.any(Flashcard.class))).thenReturn(flashcard);
 

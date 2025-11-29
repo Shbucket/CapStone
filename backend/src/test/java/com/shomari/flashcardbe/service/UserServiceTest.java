@@ -1,7 +1,5 @@
 package com.shomari.flashcardbe.service;
 
-import com.shomari.flashcardbe.entity.User;
-import com.shomari.flashcardbe.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
