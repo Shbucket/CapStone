@@ -9,10 +9,11 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name="flashcards",
         indexes = {
-                @Index(columnList = "userId")
+                @Index(columnList = "user_id")
         })
 public class Flashcard {
     @Id
+    @Column(name = "flashcard_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flashcardId;
 
@@ -31,7 +32,7 @@ public class Flashcard {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     public Flashcard() {}
