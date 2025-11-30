@@ -80,14 +80,20 @@ export default function Home() {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <Paper elevation={3} sx={{ p: 3, backgroundColor: "#FBF9FF", borderRadius: "12px" }}>
-                            <Typography variant="h6" gutterBottom>Create 10 Flashcards per Topic</Typography>
-                            <Typography>The AI will generate 10 high-quality flashcards per topic.</Typography>
+                            <Typography variant="h6" gutterBottom>Create up to 10 Flashcards per Topic</Typography>
+                            <Typography>The AI will generate up to 10 high-quality flashcards per topic.</Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <Paper elevation={3} sx={{ p: 3, backgroundColor: "#FBF9FF", borderRadius: "12px" }}>
-                            <Typography variant="h6" gutterBottom>Powered by Llama 3.1</Typography>
+                            <Typography variant="h6" gutterBottom>Powered by ChatGPT 5 </Typography>
                             <Typography>Ensuring accurate and detailed flashcards for in-depth learning.</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Paper elevation={3} sx={{ p: 3, backgroundColor: "#FBF9FF", borderRadius: "12px" }}>
+                            <Typography variant="h6" gutterBottom>Save your sets </Typography>
+                            <Typography>Your sets will save and always be here for you to review and learn again.</Typography>
                         </Paper>
                     </Grid>
                 </Grid>

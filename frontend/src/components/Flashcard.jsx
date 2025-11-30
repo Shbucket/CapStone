@@ -178,6 +178,13 @@ export default function FlashcardsPage() {
                             <Button variant="outlined" color="error" sx={{ mt: 2 }} onClick={() => handleDeleteSet(set.id)}>
                                 Delete Set
                             </Button>
+                            <Button
+                                variant="outlined"
+                                sx={{ ml: 2, mt: 2 }}
+                                onClick={() => window.open(`http://localhost:8080/api/reports/flashcards/${set.id}?userId=${user.id}`, "_blank")}
+                            >
+                                Download CSV
+                            </Button>
                         </AccordionDetails>
                     </Accordion>
                 ))
