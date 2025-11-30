@@ -25,13 +25,13 @@ public class AIFlashcardController {
         this.flashcardRepository = flashcardRepository;
     }
 
-    /** Generate flashcards only */
+    // Generate flashcards only
     @PostMapping("/flashcards")
     public List<FlashcardDTO> generateFlashcards(@RequestBody FlashcardRequest request) {
         return aiService.generateFlashcards(request.getText(), request.getNumFlashcards());
     }
 
-    /** Save flashcards as a named set */
+    // Save flashcards as a named set
     @PostMapping("/flashcards/set")
     public ResponseEntity<FlashcardSet> saveFlashcardsSet(
             @RequestParam String userId,
@@ -59,7 +59,7 @@ public class AIFlashcardController {
         return ResponseEntity.ok(set);
     }
 
-    /** DTOs */
+    // DTOs
     public static class FlashcardRequest {
         private String text;
         private int numFlashcards;

@@ -22,7 +22,7 @@ public class FlashcardController {
         this.flashcardSetService = flashcardSetService;
     }
 
-    // --- Flashcard Sets ---
+    // Flashcard Sets
 
     @GetMapping("/sets")
     public ResponseEntity<List<FlashcardSet>> getFlashcardSets(@RequestParam String userId) {
@@ -42,7 +42,7 @@ public class FlashcardController {
         return ResponseEntity.noContent().build();
     }
 
-    // --- Flashcards ---
+    // Flashcards
 
     @PostMapping
     public ResponseEntity<Flashcard> createFlashcard(@RequestParam String userId,
@@ -81,7 +81,17 @@ public class FlashcardController {
         flashcardService.deleteFlashcard(flashcard);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/summaries")
+    public List<String> getFlashcardSummaries(@RequestParam String userId,
+                                              @RequestParam Long setId) {
+        //Validate
+        flashcardSetService.getSetByIdAndUser(setId, userId);
 
+        List<Flashcard> flashcards = flashcardService.getFlashcardsBySetId(setId);
+        return flashcards.stream()
+                .map(Flashcard::getSummary)
+                .toList();
+    }
     // DTO
     public static class CreateSetRequest {
         private String name;

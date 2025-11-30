@@ -24,6 +24,7 @@ export default function FlashcardsPage() {
     const [sets, setSets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState(""); // NEW: search state
+    const [summaries, setSummaries] = useState({}); // key: setId, value: array of summaries
 
     const [editFlashcard, setEditFlashcard] = useState(null);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -108,6 +109,19 @@ export default function FlashcardsPage() {
         }
     };
 
+    /** Fetch summaries for a set */
+    const handleGenerateSummary = async (setId) => {
+        try {
+            const res = await fetch(`${backendUrl}/api/flashcards/summaries?userId=${user.id}&setId=${setId}`);
+            if (!res.ok) throw new Error("Failed to fetch summaries");
+            const data = await res.json();
+            setSummaries((prev) => ({ ...prev, [setId]: data }));
+        } catch (err) {
+            console.error(err);
+            alert("Error generating summary.");
+        }
+    };
+
     // Filter sets based on search query
     const filteredSets = sets.filter((set) =>
         set.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -175,16 +189,37 @@ export default function FlashcardsPage() {
                                     <Typography>No flashcards in this set.</Typography>
                                 )}
                             </Grid>
-                            <Button variant="outlined" color="error" sx={{ mt: 2 }} onClick={() => handleDeleteSet(set.id)}>
-                                Delete Set
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                sx={{ ml: 2, mt: 2 }}
-                                onClick={() => window.open(`http://localhost:8080/api/reports/flashcards/${set.id}?userId=${user.id}`, "_blank")}
-                            >
-                                Download CSV
-                            </Button>
+                            <div style={{ marginTop: 16 }}>
+                                <Button variant="outlined" color="error" onClick={() => handleDeleteSet(set.id)}>
+                                    Delete Set
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    sx={{ ml: 2 }}
+                                    onClick={() => window.open(`http://localhost:8080/api/reports/flashcards/${set.id}?userId=${user.id}`, "_blank")}
+                                >
+                                    Download CSV
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    sx={{ ml: 2 }}
+                                    onClick={() => handleGenerateSummary(set.id)}
+                                >
+                                    Generate Summary
+                                </Button>
+                            </div>
+
+                            {/* Display summaries */}
+                            {summaries[set.id]?.length > 0 && (
+                                <div style={{ marginTop: 16 }}>
+                                    <Typography fontWeight="bold">Summaries:</Typography>
+                                    <ul style={{ paddingLeft: 16 }} >
+                                        {summaries[set.id].map((s, idx) => (
+                                            <li key={idx} style={{ marginBottom: 8 }}>{s}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </AccordionDetails>
                     </Accordion>
                 ))

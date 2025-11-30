@@ -3,16 +3,11 @@ package com.shomari.flashcardbe.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name="flashcards",
         indexes = {@Index(columnList = "userId")})
-public class Flashcard {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long flashcardId;
+public class Flashcard extends BaseEntity {
 
     @NotBlank(message = "Topic is required")
     private String topic;
@@ -25,9 +20,6 @@ public class Flashcard {
     @NotBlank(message = "Answer is required")
     private String answer;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     @Column(nullable = false)
     private String userId;
 
@@ -38,21 +30,12 @@ public class Flashcard {
 
     public Flashcard() {}
 
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
+    @Override
+    public String getSummary() {
+        return "Question: " + question + " | A: " + answer;
     }
 
     // getters and setters
-    public Long getFlashcardId() { return flashcardId; }
-    public void setFlashcardId(Long flashcardId) { this.flashcardId = flashcardId; }
-
     public String getTopic() { return topic; }
     public void setTopic(String topic) { this.topic = topic; }
 
@@ -67,7 +50,4 @@ public class Flashcard {
 
     public FlashcardSet getFlashcardSet() { return flashcardSet; }
     public void setFlashcardSet(FlashcardSet flashcardSet) { this.flashcardSet = flashcardSet; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

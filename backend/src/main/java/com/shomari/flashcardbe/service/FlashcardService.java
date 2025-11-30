@@ -24,7 +24,7 @@ public class FlashcardService {
     }
 
     public Optional<Flashcard> getFlashcardByIdAndUserId(Long flashcardId, String userId) {
-        return flashcardRepository.findByFlashcardIdAndUserId(flashcardId, userId);
+        return flashcardRepository.findByIdAndUserId(flashcardId, userId);
     }
 
     public Flashcard updateFlashcard(Flashcard flashcard) {

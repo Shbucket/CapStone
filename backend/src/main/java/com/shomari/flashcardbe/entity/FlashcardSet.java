@@ -3,17 +3,12 @@ package com.shomari.flashcardbe.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name="flashcard_sets")
-public class FlashcardSet {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class FlashcardSet extends BaseEntity {
     @NotBlank(message = "FlashcardSet name is required")
     @Column(nullable = false)
     private String name;
@@ -27,10 +22,12 @@ public class FlashcardSet {
 
     public FlashcardSet() {}
 
-    // getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @Override
+    public String getSummary() {
+        return "Set: " + name + " (" + flashcards.size() + " flashcards)";
+    }
 
+    // getters and setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
