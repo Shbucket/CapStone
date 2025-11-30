@@ -35,7 +35,7 @@ export default function Generate() {
         try {
             const token = await getToken();
 
-            const res = await fetch(`${backendUrl}/generate`, {
+            const res = await fetch(`${backendUrl}/api/ai/flashcards`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -107,7 +107,7 @@ export default function Generate() {
                 label="Number of flashcards"
                 type="number"
                 value={numFlashcards}
-                onChange={(e) => setNumFlashcards(e.target.value)}
+                onChange={(e) => setNumFlashcards(Number(e.target.value))}
                 sx={{ mb: 2 }}
             />
 

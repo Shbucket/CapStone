@@ -12,8 +12,8 @@
 //     Toolbar,
 //     Button,
 // } from "@mui/material";
-// import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-// import { useUser } from "@clerk/nextjs";
+// import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+// import { useUser } from "@clerk/clerk-react";
 // import { useEffect, useState } from "react";
 //
 // // export default function Flashcard() {
