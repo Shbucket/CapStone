@@ -17,15 +17,17 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useUser, UserButton } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 export default function FlashcardsPage() {
     const { user } = useUser();
     const [sets, setSets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState(""); // NEW: search state
 
     const [editFlashcard, setEditFlashcard] = useState(null);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
-
+    const navigate = useNavigate();
     const backendUrl = "http://localhost:8080";
 
     /** Fetch all flashcard sets for the current user */
@@ -106,6 +108,11 @@ export default function FlashcardsPage() {
         }
     };
 
+    // Filter sets based on search query
+    const filteredSets = sets.filter((set) =>
+        set.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     if (loading) {
         return (
             <Container sx={{ py: 4, textAlign: "center" }}>
@@ -117,16 +124,30 @@ export default function FlashcardsPage() {
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
-                <Typography variant="h4" fontWeight="bold">
-                    My Flashcards
-                </Typography>
+                <Typography variant="h4" fontWeight="bold">My Flashcards</Typography>
+                <Button
+                    variant="contained"
+                    sx={{ mr: 2 }}
+                    onClick={() => navigate("/generate")}
+                >
+                    Generate New Set
+                </Button>
                 <UserButton />
             </div>
 
-            {sets.length === 0 ? (
-                <Typography>No flashcards saved yet.</Typography>
+            {/* Search bar */}
+            <TextField
+                fullWidth
+                label="Search sets by name"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{ mb: 3 }}
+            />
+
+            {filteredSets.length === 0 ? (
+                <Typography>No flashcards found.</Typography>
             ) : (
-                sets.map((set) => (
+                filteredSets.map((set) => (
                     <Accordion key={set.id} sx={{ mb: 2 }}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography fontWeight="bold">{set.name}</Typography>
@@ -140,28 +161,12 @@ export default function FlashcardsPage() {
                                                 <CardContent>
                                                     <Typography fontWeight="bold">Front</Typography>
                                                     {fc.question}
-                                                    <Typography mt={1} fontWeight="bold">
-                                                        Back
-                                                    </Typography>
+                                                    <Typography mt={1} fontWeight="bold">Back</Typography>
                                                     {fc.answer}
                                                 </CardContent>
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        justifyContent: "space-between",
-                                                        padding: 8,
-                                                    }}
-                                                >
-                                                    <Button size="small" onClick={() => handleEditFlashcard(fc)}>
-                                                        Edit
-                                                    </Button>
-                                                    <Button
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => handleDeleteFlashcard(fc.flashcardId)}
-                                                    >
-                                                        Delete
-                                                    </Button>
+                                                <div style={{ display: "flex", justifyContent: "space-between", padding: 8 }}>
+                                                    <Button size="small" onClick={() => handleEditFlashcard(fc)}>Edit</Button>
+                                                    <Button size="small" color="error" onClick={() => handleDeleteFlashcard(fc.flashcardId)}>Delete</Button>
                                                 </div>
                                             </Card>
                                         </Grid>
@@ -170,12 +175,7 @@ export default function FlashcardsPage() {
                                     <Typography>No flashcards in this set.</Typography>
                                 )}
                             </Grid>
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                sx={{ mt: 2 }}
-                                onClick={() => handleDeleteSet(set.id)}
-                            >
+                            <Button variant="outlined" color="error" sx={{ mt: 2 }} onClick={() => handleDeleteSet(set.id)}>
                                 Delete Set
                             </Button>
                         </AccordionDetails>
@@ -190,18 +190,14 @@ export default function FlashcardsPage() {
                         fullWidth
                         label="Front"
                         value={editFlashcard?.question || ""}
-                        onChange={(e) =>
-                            setEditFlashcard({ ...editFlashcard, question: e.target.value })
-                        }
+                        onChange={(e) => setEditFlashcard({ ...editFlashcard, question: e.target.value })}
                         sx={{ mb: 2 }}
                     />
                     <TextField
                         fullWidth
                         label="Back"
                         value={editFlashcard?.answer || ""}
-                        onChange={(e) =>
-                            setEditFlashcard({ ...editFlashcard, answer: e.target.value })
-                        }
+                        onChange={(e) => setEditFlashcard({ ...editFlashcard, answer: e.target.value })}
                     />
                 </DialogContent>
                 <DialogActions>

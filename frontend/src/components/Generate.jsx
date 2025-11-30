@@ -4,6 +4,8 @@ import {
     Grid, Card, CardContent, Dialog, DialogContent, DialogActions
 } from "@mui/material";
 import { useAuth, useUser, UserButton } from "@clerk/clerk-react";
+import {useNavigate} from "react-router-dom";
+
 
 export default function Generate() {
     const { user } = useUser();
@@ -15,7 +17,7 @@ export default function Generate() {
     const [setName, setSetName] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-
+    const navigate = useNavigate();
     const backendUrl = "http://localhost:8080";
 
     // Generate flashcards using AI
@@ -98,6 +100,13 @@ export default function Generate() {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Box display="flex" justifyContent="space-between" mb={3}>
                 <Typography variant="h4" fontWeight="bold">Generate Flashcards</Typography>
+                <Button
+                    variant="contained"
+                    sx={{ mr: 2 }}
+                    onClick={() => navigate("/Flashcards")}
+                >
+                    View your sets
+                </Button>
                 <UserButton />
             </Box>
 
