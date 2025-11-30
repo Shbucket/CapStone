@@ -1,6 +1,6 @@
 package com.shomari.flashcardbe.entity;
 
-
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -22,33 +22,21 @@ public class FlashcardSet {
     private String userId; // Clerk user ID
 
     @OneToMany(mappedBy = "flashcardSet", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Flashcard> flashcards = new ArrayList<>();
 
     public FlashcardSet() {}
 
     // getters and setters
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getUserId() {
-        return userId;
-    }
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-    public List<Flashcard> getFlashcards() {
-        return flashcards;
-    }
-    public void setFlashcards(List<Flashcard> flashcards) {
-        this.flashcards = flashcards;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public List<Flashcard> getFlashcards() { return flashcards; }
+    public void setFlashcards(List<Flashcard> flashcards) { this.flashcards = flashcards; }
 }

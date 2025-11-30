@@ -1,35 +1,26 @@
 import { useState } from "react";
 import {
-    Container,
-    TextField,
-    Button,
-    Typography,
-    Box,
-    Grid,
-    Card,
-    CardContent,
-    Dialog,
-    DialogContent,
-    DialogActions,
+    Container, TextField, Button, Typography, Box,
+    Grid, Card, CardContent, Dialog, DialogContent, DialogActions
 } from "@mui/material";
-
 import { useAuth, useUser, UserButton } from "@clerk/clerk-react";
 
 export default function Generate() {
     const { user } = useUser();
     const { getToken } = useAuth();
 
-    const [text, setText] = useState("");
+    const [topic, setTopic] = useState("");
+    const [numFlashcards, setNumFlashcards] = useState(5);
     const [flashcards, setFlashcards] = useState([]);
-    const [numFlashcards, setNumFlashcards] = useState(10);
     const [setName, setSetName] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const backendUrl = "http://localhost:8080";
 
+    // Generate flashcards using AI
     const handleGenerate = async () => {
-        if (!text.trim()) return alert("Enter text first.");
+        if (!topic.trim()) return alert("Enter a topic.");
 
         setLoading(true);
         try {
@@ -41,7 +32,7 @@ export default function Generate() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ text, numFlashcards }),
+                body: JSON.stringify({ text: topic, numFlashcards }),
             });
 
             const data = await res.json();
@@ -54,78 +45,84 @@ export default function Generate() {
         }
     };
 
-    const handleSave = async () => {
-        if (!setName.trim()) return alert("Enter a name.");
+    // Save flashcards as a named set
+    const handleSaveSet = async () => {
+        if (!setName.trim()) return alert("Enter a set name.");
 
         try {
             const token = await getToken();
 
-            const res = await fetch(`${backendUrl}/flashcards/set`, {
+            // Create the flashcard set
+            const setRes = await fetch(`${backendUrl}/api/flashcards/sets?userId=${user.id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    name: setName,
-                    userId: user.id,
-                    flashcards,
-                }),
+                body: JSON.stringify({ name: setName }),
             });
 
-            if (!res.ok) throw new Error("Failed");
+            if (!setRes.ok) throw new Error("Failed to create set");
+            const savedSet = await setRes.json();
 
-            alert("Saved!");
+            // Save each flashcard under that set
+            for (const fc of flashcards) {
+                const flashRes = await fetch(`${backendUrl}/api/flashcards?userId=${user.id}&setId=${savedSet.id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        topic,
+                        question: fc.front,
+                        answer: fc.back,
+                    }),
+                });
+
+                if (!flashRes.ok) throw new Error("Failed to save flashcard");
+            }
+
+            alert("Flashcards saved successfully!");
             setDialogOpen(false);
+            setFlashcards([]);
+            setSetName("");
+            setTopic("");
         } catch (err) {
             console.error(err);
-            alert("Error saving.");
+            alert("Error saving set.");
         }
     };
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Box display="flex" justifyContent="space-between" mb={3}>
-                <Typography variant="h4" fontWeight="bold">
-                    Generate Flashcards
-                </Typography>
+                <Typography variant="h4" fontWeight="bold">Generate Flashcards</Typography>
                 <UserButton />
             </Box>
 
             <TextField
-                fullWidth
-                label="Topic or text"
-                multiline
-                rows={3}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
+                fullWidth label="Topic"
+                value={topic} onChange={(e) => setTopic(e.target.value)}
                 sx={{ mb: 2 }}
             />
-
             <TextField
-                fullWidth
-                label="Number of flashcards"
-                type="number"
-                value={numFlashcards}
+                fullWidth label="Number of flashcards"
+                type="number" value={numFlashcards}
                 onChange={(e) => setNumFlashcards(Number(e.target.value))}
                 sx={{ mb: 2 }}
             />
 
             <Button
-                variant="contained"
-                fullWidth
-                onClick={handleGenerate}
-                disabled={loading}
+                variant="contained" fullWidth
+                onClick={handleGenerate} disabled={loading}
             >
-                {loading ? "Working..." : "Generate"}
+                {loading ? "Generating..." : "Generate"}
             </Button>
 
             {flashcards.length > 0 && (
                 <>
-                    <Typography mt={4} mb={2} variant="h5">
-                        Preview
-                    </Typography>
-
+                    <Typography mt={4} mb={2} variant="h5">Preview</Typography>
                     <Grid container spacing={2}>
                         {flashcards.map((fc, i) => (
                             <Grid item xs={12} sm={6} key={i}>
@@ -133,9 +130,7 @@ export default function Generate() {
                                     <CardContent>
                                         <Typography fontWeight="bold">Front</Typography>
                                         {fc.front}
-                                        <Typography mt={1} fontWeight="bold">
-                                            Back
-                                        </Typography>
+                                        <Typography mt={1} fontWeight="bold">Back</Typography>
                                         {fc.back}
                                     </CardContent>
                                 </Card>
@@ -143,11 +138,7 @@ export default function Generate() {
                         ))}
                     </Grid>
 
-                    <Button
-                        sx={{ mt: 3 }}
-                        variant="contained"
-                        onClick={() => setDialogOpen(true)}
-                    >
+                    <Button sx={{ mt: 3 }} variant="contained" onClick={() => setDialogOpen(true)}>
                         Save Set
                     </Button>
                 </>
@@ -156,15 +147,13 @@ export default function Generate() {
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
                 <DialogContent>
                     <TextField
-                        fullWidth
-                        label="Flashcard Set Name"
-                        value={setName}
-                        onChange={(e) => setSetName(e.target.value)}
+                        fullWidth label="Set Name"
+                        value={setName} onChange={(e) => setSetName(e.target.value)}
                     />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={handleSaveSet}>Save</Button>
                 </DialogActions>
             </Dialog>
         </Container>
