@@ -1,43 +1,44 @@
 import { useState, useEffect } from "react";
 import {
-    Container,
-    Typography,
-    Grid,
-    Card,
-    CardContent,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    CircularProgress,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogActions,
-    TextField,
+    Container, Typography, Grid, Card, CardContent, Accordion, AccordionSummary, AccordionDetails,
+    CircularProgress, Button, Dialog, DialogContent, DialogActions, TextField
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useUser, UserButton } from "@clerk/clerk-react";
+import { useUser, useAuth, UserButton } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 
 export default function FlashcardsPage() {
-    const { user } = useUser();
-    const [sets, setSets] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState(""); // NEW: search state
-    const [summaries, setSummaries] = useState({}); // key: setId, value: array of summaries
-
-    const [editFlashcard, setEditFlashcard] = useState(null);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const { isLoaded, user } = useUser();
+    const { getToken } = useAuth();
     const navigate = useNavigate();
     const backendUrl = "http://localhost:8080";
 
-    /** Fetch all flashcard sets for the current user */
+    const [sets, setSets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [summaries, setSummaries] = useState({});
+    const [editFlashcard, setEditFlashcard] = useState(null);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+    // Helper to get a valid token
+    const getAuthToken = async () => {
+        if (!isLoaded || !user) return null;
+        return await getToken();
+    };
+
+    // Fetch all flashcard sets
     const fetchSets = async () => {
-        if (!user) return;
         setLoading(true);
         try {
-            const res = await fetch(`${backendUrl}/api/flashcards/sets?userId=${user.id}`);
+            const token = await getAuthToken();
+            if (!token) return;
+
+            const res = await fetch(`${backendUrl}/api/flashcards/sets`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
             if (!res.ok) throw new Error("Failed to fetch sets");
+
             const data = await res.json();
             setSets(data);
         } catch (err) {
@@ -49,16 +50,20 @@ export default function FlashcardsPage() {
     };
 
     useEffect(() => {
-        fetchSets();
-    }, [user]);
+        if (isLoaded && user) fetchSets();
+    }, [isLoaded, user]);
 
-    /** Delete a flashcard set */
     const handleDeleteSet = async (setId) => {
         if (!window.confirm("Delete this set?")) return;
         try {
-            const res = await fetch(`${backendUrl}/api/flashcards/sets/${setId}?userId=${user.id}`, {
+            const token = await getAuthToken();
+            if (!token) return;
+
+            const res = await fetch(`${backendUrl}/api/flashcards/sets/${setId}`, {
                 method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
             });
+
             if (!res.ok) throw new Error("Failed to delete set");
             fetchSets();
         } catch (err) {
@@ -67,13 +72,17 @@ export default function FlashcardsPage() {
         }
     };
 
-    /** Delete an individual flashcard */
     const handleDeleteFlashcard = async (flashcardId) => {
         if (!window.confirm("Delete this flashcard?")) return;
         try {
-            const res = await fetch(`${backendUrl}/api/flashcards/${flashcardId}?userId=${user.id}`, {
+            const token = await getAuthToken();
+            if (!token) return;
+
+            const res = await fetch(`${backendUrl}/api/flashcards/${flashcardId}`, {
                 method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
             });
+
             if (!res.ok) throw new Error("Failed to delete flashcard");
             fetchSets();
         } catch (err) {
@@ -82,24 +91,26 @@ export default function FlashcardsPage() {
         }
     };
 
-    /** Open edit dialog for a flashcard */
     const handleEditFlashcard = (fc) => {
         setEditFlashcard(fc);
         setEditDialogOpen(true);
     };
 
-    /** Save edited flashcard */
     const handleSaveEdit = async () => {
         if (!editFlashcard) return;
         try {
-            const res = await fetch(
-                `${backendUrl}/api/flashcards/${editFlashcard.flashcardId}?userId=${user.id}`,
-                {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(editFlashcard),
-                }
-            );
+            const token = await getAuthToken();
+            if (!token) return;
+
+            const res = await fetch(`${backendUrl}/api/flashcards/${editFlashcard.flashcardId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(editFlashcard),
+            });
+
             if (!res.ok) throw new Error("Failed to update flashcard");
             setEditDialogOpen(false);
             fetchSets();
@@ -109,25 +120,28 @@ export default function FlashcardsPage() {
         }
     };
 
-    /** Fetch summaries for a set */
     const handleGenerateSummary = async (setId) => {
         try {
-            const res = await fetch(`${backendUrl}/api/flashcards/summaries?userId=${user.id}&setId=${setId}`);
+            const token = await getAuthToken();
+            if (!token) return;
+
+            const res = await fetch(`${backendUrl}/api/flashcards/summaries?setId=${setId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
             if (!res.ok) throw new Error("Failed to fetch summaries");
+
             const data = await res.json();
-            setSummaries((prev) => ({ ...prev, [setId]: data }));
+            setSummaries(prev => ({ ...prev, [setId]: data }));
         } catch (err) {
             console.error(err);
             alert("Error generating summary.");
         }
     };
 
-    // Filter sets based on search query
-    const filteredSets = sets.filter((set) =>
-        set.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredSets = sets.filter(set => set.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    if (loading) {
+    if (!isLoaded || loading) {
         return (
             <Container sx={{ py: 4, textAlign: "center" }}>
                 <CircularProgress />
@@ -139,17 +153,10 @@ export default function FlashcardsPage() {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
                 <Typography variant="h4" fontWeight="bold">My Flashcards</Typography>
-                <Button
-                    variant="contained"
-                    sx={{ mr: 2 }}
-                    onClick={() => navigate("/generate")}
-                >
-                    Generate New Set
-                </Button>
+                <Button variant="contained" sx={{ mr: 2 }} onClick={() => navigate("/generate")}>Generate New Set</Button>
                 <UserButton />
             </div>
 
-            {/* Search bar */}
             <TextField
                 fullWidth
                 label="Search sets by name"
@@ -161,62 +168,42 @@ export default function FlashcardsPage() {
             {filteredSets.length === 0 ? (
                 <Typography>No flashcards found.</Typography>
             ) : (
-                filteredSets.map((set) => (
+                filteredSets.map(set => (
                     <Accordion key={set.id} sx={{ mb: 2 }}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                             <Typography fontWeight="bold">{set.name}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                             <Grid container spacing={2}>
-                                {set.flashcards?.length > 0 ? (
-                                    set.flashcards.map((fc) => (
-                                        <Grid item xs={12} sm={6} key={fc.flashcardId}>
-                                            <Card sx={{ position: "relative" }}>
-                                                <CardContent>
-                                                    <Typography fontWeight="bold">Front</Typography>
-                                                    {fc.question}
-                                                    <Typography mt={1} fontWeight="bold">Back</Typography>
-                                                    {fc.answer}
-                                                </CardContent>
-                                                <div style={{ display: "flex", justifyContent: "space-between", padding: 8 }}>
-                                                    <Button size="small" onClick={() => handleEditFlashcard(fc)}>Edit</Button>
-                                                    <Button size="small" color="error" onClick={() => handleDeleteFlashcard(fc.flashcardId)}>Delete</Button>
-                                                </div>
-                                            </Card>
-                                        </Grid>
-                                    ))
-                                ) : (
-                                    <Typography>No flashcards in this set.</Typography>
-                                )}
+                                {set.flashcards?.length > 0 ? set.flashcards.map(fc => (
+                                    <Grid item key={fc.flashcardId} xs={12} sm={6}>
+                                        <Card sx={{ position: "relative" }}>
+                                            <CardContent>
+                                                <Typography fontWeight="bold">Front</Typography>
+                                                {fc.question}
+                                                <Typography mt={1} fontWeight="bold">Back</Typography>
+                                                {fc.answer}
+                                            </CardContent>
+                                            <div style={{ display: "flex", justifyContent: "space-between", padding: 8 }}>
+                                                <Button size="small" onClick={() => handleEditFlashcard(fc)}>Edit</Button>
+                                                <Button size="small" color="error" onClick={() => handleDeleteFlashcard(fc.flashcardId)}>Delete</Button>
+                                            </div>
+                                        </Card>
+                                    </Grid>
+                                )) : <Typography>No flashcards in this set.</Typography>}
                             </Grid>
+
                             <div style={{ marginTop: 16 }}>
-                                <Button variant="outlined" color="error" onClick={() => handleDeleteSet(set.id)}>
-                                    Delete Set
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    sx={{ ml: 2 }}
-                                    onClick={() => window.open(`http://localhost:8080/api/reports/flashcards/${set.id}?userId=${user.id}`, "_blank")}
-                                >
-                                    Download CSV
-                                </Button>
-                                <Button
-                                    variant="outlined"
-                                    sx={{ ml: 2 }}
-                                    onClick={() => handleGenerateSummary(set.id)}
-                                >
-                                    Generate Summary
-                                </Button>
+                                <Button variant="outlined" color="error" onClick={() => handleDeleteSet(set.id)}>Delete Set</Button>
+                                <Button variant="outlined" sx={{ ml: 2 }} onClick={() => window.open(`${backendUrl}/api/reports/flashcards/${set.id}`, "_blank")}>Download CSV</Button>
+                                <Button variant="outlined" sx={{ ml: 2 }} onClick={() => handleGenerateSummary(set.id)}>Generate Summary</Button>
                             </div>
 
-                            {/* Display summaries */}
                             {summaries[set.id]?.length > 0 && (
                                 <div style={{ marginTop: 16 }}>
                                     <Typography fontWeight="bold">Summaries:</Typography>
-                                    <ul style={{ paddingLeft: 16 }} >
-                                        {summaries[set.id].map((s, idx) => (
-                                            <li key={idx} style={{ marginBottom: 8 }}>{s}</li>
-                                        ))}
+                                    <ul style={{ paddingLeft: 16 }}>
+                                        {summaries[set.id].map((s, idx) => <li key={idx} style={{ marginBottom: 8 }}>{s}</li>)}
                                     </ul>
                                 </div>
                             )}
@@ -225,7 +212,6 @@ export default function FlashcardsPage() {
                 ))
             )}
 
-            {/* Edit Flashcard Dialog */}
             <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
                 <DialogContent>
                     <TextField

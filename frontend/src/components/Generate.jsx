@@ -4,12 +4,13 @@ import {
     Grid, Card, CardContent, Dialog, DialogContent, DialogActions
 } from "@mui/material";
 import { useAuth, useUser, UserButton } from "@clerk/clerk-react";
-import {useNavigate} from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 
 export default function Generate() {
     const { user } = useUser();
     const { getToken } = useAuth();
+    const navigate = useNavigate();
+    const backendUrl = "http://localhost:8080";
 
     const [topic, setTopic] = useState("");
     const [numFlashcards, setNumFlashcards] = useState(5);
@@ -17,17 +18,13 @@ export default function Generate() {
     const [setName, setSetName] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const backendUrl = "http://localhost:8080";
 
     // Generate flashcards using AI
     const handleGenerate = async () => {
         if (!topic.trim()) return alert("Enter a topic.");
-
         setLoading(true);
         try {
             const token = await getToken();
-
             const res = await fetch(`${backendUrl}/api/ai/flashcards`, {
                 method: "POST",
                 headers: {
@@ -36,7 +33,7 @@ export default function Generate() {
                 },
                 body: JSON.stringify({ text: topic, numFlashcards }),
             });
-
+            if (!res.ok) throw new Error("Failed to generate flashcards");
             const data = await res.json();
             setFlashcards(data);
         } catch (err) {
@@ -50,40 +47,27 @@ export default function Generate() {
     // Save flashcards as a named set
     const handleSaveSet = async () => {
         if (!setName.trim()) return alert("Enter a set name.");
+        if (flashcards.length === 0) return alert("No flashcards to save.");
 
         try {
             const token = await getToken();
 
-            // Create the flashcard set
-            const setRes = await fetch(`${backendUrl}/api/flashcards/sets?userId=${user.id}`, {
+            const payload = {
+                setName,
+                topic,
+                flashcards: flashcards.map(fc => ({ front: fc.front, back: fc.back })),
+            };
+
+            const res = await fetch(`${backendUrl}/api/ai/flashcards/set`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ name: setName }),
+                body: JSON.stringify(payload),
             });
 
-            if (!setRes.ok) throw new Error("Failed to create set");
-            const savedSet = await setRes.json();
-
-            // Save each flashcard under that set
-            for (const fc of flashcards) {
-                const flashRes = await fetch(`${backendUrl}/api/flashcards?userId=${user.id}&setId=${savedSet.id}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        topic,
-                        question: fc.front,
-                        answer: fc.back,
-                    }),
-                });
-
-                if (!flashRes.ok) throw new Error("Failed to save flashcard");
-            }
+            if (!res.ok) throw new Error("Failed to save flashcards set");
 
             alert("Flashcards saved successfully!");
             setDialogOpen(false);
@@ -92,7 +76,7 @@ export default function Generate() {
             setTopic("");
         } catch (err) {
             console.error(err);
-            alert("Error saving set.");
+            alert("Error saving flashcards set.");
         }
     };
 
@@ -100,11 +84,7 @@ export default function Generate() {
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Box display="flex" justifyContent="space-between" mb={3}>
                 <Typography variant="h4" fontWeight="bold">Generate Flashcards</Typography>
-                <Button
-                    variant="contained"
-                    sx={{ mr: 2 }}
-                    onClick={() => navigate("/Flashcards")}
-                >
+                <Button variant="contained" sx={{ mr: 2 }} onClick={() => navigate("/flashcards")}>
                     View your sets
                 </Button>
                 <UserButton />
@@ -137,10 +117,8 @@ export default function Generate() {
                             <Grid item xs={12} sm={6} key={i}>
                                 <Card>
                                     <CardContent>
-                                        <Typography fontWeight="bold">Front</Typography>
-                                        {fc.front}
-                                        <Typography mt={1} fontWeight="bold">Back</Typography>
-                                        {fc.back}
+                                        <Typography fontWeight="bold">Front</Typography>{fc.front}
+                                        <Typography mt={1} fontWeight="bold">Back</Typography>{fc.back}
                                     </CardContent>
                                 </Card>
                             </Grid>

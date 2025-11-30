@@ -1,20 +1,18 @@
 package com.shomari.flashcardbe.controller;
 
-
 import com.shomari.flashcardbe.entity.FlashcardSet;
 import com.shomari.flashcardbe.service.FlashcardSetService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 @RestController
 @RequestMapping("/api/reports")
 public class FlashcardReportController {
+
     private final FlashcardSetService flashcardSetService;
 
     public FlashcardReportController(FlashcardSetService flashcardSetService) {
@@ -22,7 +20,11 @@ public class FlashcardReportController {
     }
 
     @GetMapping("/flashcards/{setId}")
-    public void exportSetCsv(@RequestParam String userId, @PathVariable Long setId, HttpServletResponse response) throws Exception {
+    public void exportSetCsv(@PathVariable Long setId,
+                             Authentication authentication,
+                             HttpServletResponse response) throws Exception {
+
+        String userId = authentication.getName();
         FlashcardSet set = flashcardSetService.getSetByIdAndUser(setId, userId);
 
         response.setContentType("text/csv");
@@ -45,5 +47,4 @@ public class FlashcardReportController {
         writer.flush();
         writer.close();
     }
-
 }

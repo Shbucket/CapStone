@@ -5,8 +5,9 @@ import com.shomari.flashcardbe.entity.FlashcardSet;
 import com.shomari.flashcardbe.service.FlashcardService;
 import com.shomari.flashcardbe.service.FlashcardSetService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -25,19 +26,23 @@ public class FlashcardController {
     // Flashcard Sets
 
     @GetMapping("/sets")
-    public ResponseEntity<List<FlashcardSet>> getFlashcardSets(@RequestParam String userId) {
-        // userId is now passed from frontend via query param
+    public ResponseEntity<List<FlashcardSet>> getFlashcardSets(Authentication authentication) {
+        String userId = authentication.getName();
         return ResponseEntity.ok(flashcardSetService.getSetsByUser(userId));
     }
 
     @PostMapping("/sets")
-    public ResponseEntity<FlashcardSet> createFlashcardSet(@RequestParam String userId,
-                                                           @RequestBody CreateSetRequest body) {
+    public ResponseEntity<FlashcardSet> createFlashcardSet(
+            @RequestBody CreateSetRequest body,
+            Authentication authentication) {
+
+        String userId = authentication.getName();
         return ResponseEntity.ok(flashcardSetService.createSet(userId, body.getName()));
     }
 
     @DeleteMapping("/sets/{setId}")
-    public ResponseEntity<Void> deleteSet(@RequestParam String userId, @PathVariable Long setId) {
+    public ResponseEntity<Void> deleteSet(@PathVariable Long setId, Authentication authentication) {
+        String userId = authentication.getName();
         flashcardSetService.deleteSet(setId, userId);
         return ResponseEntity.noContent().build();
     }
@@ -45,9 +50,10 @@ public class FlashcardController {
     // Flashcards
 
     @PostMapping
-    public ResponseEntity<Flashcard> createFlashcard(@RequestParam String userId,
-                                                     @RequestBody Flashcard flashcard,
-                                                     @RequestParam Long setId) {
+    public ResponseEntity<Flashcard> createFlashcard(@RequestBody Flashcard flashcard,
+                                                     @RequestParam Long setId,
+                                                     Authentication authentication) {
+        String userId = authentication.getName();
         FlashcardSet set = flashcardSetService.getSetByIdAndUser(setId, userId);
         flashcard.setFlashcardSet(set);
         flashcard.setUserId(userId);
@@ -55,43 +61,38 @@ public class FlashcardController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Flashcard>> getFlashcards(@RequestParam String userId,
-                                                         @RequestParam Long setId) {
+    public ResponseEntity<List<Flashcard>> getFlashcards(@RequestParam Long setId,
+                                                         Authentication authentication) {
+        String userId = authentication.getName();
         flashcardSetService.getSetByIdAndUser(setId, userId); // validate ownership
         return ResponseEntity.ok(flashcardService.getFlashcardsBySetId(setId));
     }
 
     @PutMapping("/{flashcardId}")
-    public ResponseEntity<Flashcard> updateFlashcard(@RequestParam String userId,
-                                                     @PathVariable Long flashcardId,
-                                                     @RequestBody Flashcard updated) {
+    public ResponseEntity<Flashcard> updateFlashcard(@PathVariable Long flashcardId,
+                                                     @RequestBody Flashcard updated,
+                                                     Authentication authentication) {
+        String userId = authentication.getName();
         Flashcard flashcard = flashcardService.getFlashcardByIdAndUserId(flashcardId, userId)
                 .orElseThrow(() -> new RuntimeException("Flashcard not found"));
+
         flashcard.setTopic(updated.getTopic());
         flashcard.setQuestion(updated.getQuestion());
         flashcard.setAnswer(updated.getAnswer());
+
         return ResponseEntity.ok(flashcardService.updateFlashcard(flashcard));
     }
 
     @DeleteMapping("/{flashcardId}")
-    public ResponseEntity<Void> deleteFlashcard(@RequestParam String userId,
-                                                @PathVariable Long flashcardId) {
+    public ResponseEntity<Void> deleteFlashcard(@PathVariable Long flashcardId,
+                                                Authentication authentication) {
+        String userId = authentication.getName();
         Flashcard flashcard = flashcardService.getFlashcardByIdAndUserId(flashcardId, userId)
                 .orElseThrow(() -> new RuntimeException("Flashcard not found"));
         flashcardService.deleteFlashcard(flashcard);
         return ResponseEntity.noContent().build();
     }
-    @GetMapping("/summaries")
-    public List<String> getFlashcardSummaries(@RequestParam String userId,
-                                              @RequestParam Long setId) {
-        //Validate
-        flashcardSetService.getSetByIdAndUser(setId, userId);
 
-        List<Flashcard> flashcards = flashcardService.getFlashcardsBySetId(setId);
-        return flashcards.stream()
-                .map(Flashcard::getSummary)
-                .toList();
-    }
     // DTO
     public static class CreateSetRequest {
         private String name;

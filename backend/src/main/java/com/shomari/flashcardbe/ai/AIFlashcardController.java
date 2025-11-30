@@ -5,6 +5,7 @@ import com.shomari.flashcardbe.entity.FlashcardSet;
 import com.shomari.flashcardbe.repository.FlashcardRepository;
 import com.shomari.flashcardbe.repository.FlashcardSetRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,8 +35,10 @@ public class AIFlashcardController {
     // Save flashcards as a named set
     @PostMapping("/flashcards/set")
     public ResponseEntity<FlashcardSet> saveFlashcardsSet(
-            @RequestParam String userId,
-            @RequestBody SaveFlashcardSetRequest request) {
+            @RequestBody SaveFlashcardSetRequest request,
+            Authentication authentication) {
+
+        String userId = authentication.getName();
 
         // Create set
         FlashcardSet set = new FlashcardSet();

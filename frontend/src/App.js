@@ -1,7 +1,7 @@
 import {BrowserRouter, Route, Router, Routes} from "react-router-dom";
 import Home from "./components/Home";
 import Generate from "./components/Generate";
-import Flashcards from "./components/Flashcard"
+import Flashcards from "./components/FlashcardsPage"
 import SignInPage from "./components/SignIn";
 import SignUpPage from "./components/SIgnUp";
 function App() {
