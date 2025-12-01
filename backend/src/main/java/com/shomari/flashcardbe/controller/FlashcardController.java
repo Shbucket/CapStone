@@ -46,7 +46,17 @@ public class FlashcardController {
         flashcardSetService.deleteSet(setId, userId);
         return ResponseEntity.noContent().build();
     }
+    //summary
 
+    @GetMapping("/{setId}/summaries")
+    public List<String> getSummaries(@PathVariable Long setId, Authentication authentication) {
+        String userId = authentication.getName();
+        FlashcardSet set = flashcardSetService.getSetByIdAndUser(setId, userId);
+
+        return set.getFlashcards().stream()
+                .map(fc -> fc.getSummary())
+                .toList();
+    }
     // Flashcards
 
     @PostMapping
