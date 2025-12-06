@@ -80,8 +80,8 @@ export default function Home() {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <Paper elevation={3} sx={{ p: 3, backgroundColor: "#FBF9FF", borderRadius: "12px" }}>
-                            <Typography variant="h6" gutterBottom>Create up to 10 Flashcards per Topic</Typography>
-                            <Typography>The AI will generate up to 10 high-quality flashcards per topic.</Typography>
+                            <Typography variant="h6" gutterBottom>Create up to 10+ Flashcards per Topic</Typography>
+                            <Typography>The AI will generate up to 10+ high-quality flashcards per topic.</Typography>
                         </Paper>
                     </Grid>
                     <Grid item xs={12} md={4}>

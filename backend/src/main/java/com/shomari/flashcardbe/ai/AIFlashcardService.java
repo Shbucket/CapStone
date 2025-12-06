@@ -11,7 +11,7 @@ public class AIFlashcardService {
 
     private final ChatClient chatClient;
 
-    // Spring will auto-inject ChatClient.Builder thanks to the OpenAI starter
+
     public AIFlashcardService(ChatClient.Builder builder) {
         this.chatClient = builder.build();
     }
@@ -31,7 +31,7 @@ public class AIFlashcardService {
                 .prompt()
                 .user(prompt)
                 .call()
-                .content();   // <-- NOT toString()
+                .content();
 
         List<FlashcardDTO> flashcards = new ArrayList<>();
         String front = null, back = null;

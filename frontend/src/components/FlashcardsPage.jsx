@@ -13,7 +13,7 @@ export default function FlashcardsPage() {
     const navigate = useNavigate();
     const backendUrl = "http://localhost:8080";
 
-    const [flashcards, setFlashcards] = useState([]);
+
     const [sets, setSets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -200,7 +200,7 @@ export default function FlashcardsPage() {
             />
 
             {filteredSets.length === 0 ? (
-                <Typography>No flashcards found.</Typography>
+                <Typography>No Set found.</Typography>
             ) : (
                 filteredSets.map(set => (
                     <Accordion key={set.id} sx={{ mb: 2 }}>
@@ -238,7 +238,7 @@ export default function FlashcardsPage() {
 
                             <div style={{ marginTop: 16 }}>
                                 <Button variant="outlined" color="error" onClick={() => handleDeleteSet(set.id)}>Delete Set</Button>
-                                <Button variant="outlined" sx={{ ml: 2 }} onClick={() => handleDownloadCsv(set.id, set.name)}>Download CSV</Button>
+                                <Button variant="outlined" sx={{ ml: 2 }} onClick={() => handleDownloadCsv(set.id, set.name)}>Download Report</Button>
                                 <Button variant="outlined" sx={{ ml: 2 }} onClick={() => handleGenerateSummary(set.id)}>Generate Summary</Button>
                             </div>
 
