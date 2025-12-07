@@ -4,22 +4,11 @@ FROM eclipse-temurin:17-jdk
 # Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and pom files
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-
-# Copy all backend source code
-COPY src ./src
-
-# Make Maven wrapper executable
-RUN chmod +x mvnw
-
-# Build the project
-RUN ./mvnw clean package -DskipTests
+# Copy the built JAR from your local target folder
+COPY target/flashcardBE-0.0.1-SNAPSHOT.jar ./flashcardBE-0.0.1-SNAPSHOT.jar
 
 # Expose port Spring Boot runs on
 EXPOSE 8080
 
 # Run the Spring Boot app
-CMD ["java", "-jar", "target/flashcardbe-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "flashcardBE-0.0.1-SNAPSHOT.jar"]
