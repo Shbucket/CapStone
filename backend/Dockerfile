@@ -19,5 +19,5 @@ RUN ./mvnw clean package -DskipTests
 # Expose port for local testing (optional, Render uses the env variable)
 EXPOSE 8080
 
-# Use the PORT env variable from Render at runtime
-CMD "java", "-jar", "target/flashcardBE-0.0.1-SNAPSHOT.jar"
+# Correct CMD using shell form to allow $PORT expansion
+CMD sh -c "java -Dserver.port=\$PORT -jar target/flashcardBE-0.0.1-SNAPSHOT.jar"
