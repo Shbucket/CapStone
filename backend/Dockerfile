@@ -1,14 +1,14 @@
-# Use an official OpenJDK runtime as a parent image
 FROM eclipse-temurin:17-jdk
 
-# Set working directory
 WORKDIR /app
 
-# Copy the built JAR from your local target folder
-COPY target/flashcardBE-0.0.1-SNAPSHOT.jar ./flashcardBE-0.0.1-SNAPSHOT.jar
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src ./src
 
-# Expose port Spring Boot runs on
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests
+
 EXPOSE 8080
-
-# Run the Spring Boot app
-CMD ["java", "-jar", "flashcardBE-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/flashcardBE-0.0.1-SNAPSHOT.jar"]
