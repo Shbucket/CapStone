@@ -10,7 +10,7 @@ export default function Generate() {
     const { user } = useUser();
     const { getToken } = useAuth();
     const navigate = useNavigate();
-    const backendUrl = "http://localhost:8080";
+    const backendUrl = process.env.REACT_APP_API_URL;
 
     const [topic, setTopic] = useState("");
     const [numFlashcards, setNumFlashcards] = useState(5);

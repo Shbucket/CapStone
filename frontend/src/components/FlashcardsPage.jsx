@@ -11,7 +11,7 @@ export default function FlashcardsPage() {
     const { isLoaded, user } = useUser();
     const { getToken } = useAuth();
     const navigate = useNavigate();
-    const backendUrl = "http://localhost:8080";
+    const backendUrl = process.env.REACT_APP_API_URL;
 
 
     const [sets, setSets] = useState([]);
