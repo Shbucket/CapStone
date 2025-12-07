@@ -20,4 +20,4 @@ RUN ./mvnw clean package -DskipTests
 EXPOSE 8080
 
 # Use the PORT env variable from Render at runtime
-CMD ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar target/flashcardBE-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/flashcardBE-0.0.1-SNAPSHOT.jar"]
