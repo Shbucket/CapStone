@@ -14,7 +14,9 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // allow all endpoints
-                        .allowedOrigins("https://www.studywise.fun") // your frontend
+                        .allowedOrigins("https://www.studywise.fun",
+                                "https://studywise.fun"
+                                ) // your frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
